@@ -170,6 +170,21 @@
     font-size: 16px; cursor: pointer;
   }
   .speak-btn:hover { background: rgba(43,58,66,0.16); }
+  .mic-btn {
+    position: absolute; top: 8px; left: 8px;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(193,68,14,0.12); border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; cursor: pointer;
+  }
+  .mic-btn:hover { background: rgba(193,68,14,0.22); }
+
+  .card-wrap { display: flex; flex-direction: column; }
+  .mic-feedback { font-size: 12px; margin: 6px 0 0; padding: 6px 8px; border-radius: 8px; line-height: 1.3; }
+  .mic-listening { background: #FFF6E0; color: #6b5416; }
+  .mic-error { background: #FBE9E6; color: #7a2a17; }
+  .mic-ok { background: #E6F1EA; color: #244a3d; }
+  .mic-bad { background: #FBE9E6; color: #7a2a17; }
 
   .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
 
@@ -1578,6 +1593,7 @@ let state = {
   dialogueTurnIndex: 0,
   dialogueHistory: [],
   dialogueFeedback: null,
+  micResults: {},
 };
 
 async function init() {
@@ -1702,12 +1718,60 @@ function speak(text, evt) {
   } catch (e) {}
 }
 
+function normalizeForMatch(s) {
+  return s.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+}
+
+function startMic(key, expectedText, evt) {
+  if (evt) evt.stopPropagation();
+  const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognitionCtor) {
+    state.micResults[key] = { error: "Seu navegador não suporta reconhecimento de voz. Tente no Chrome." };
+    render();
+    return;
+  }
+  state.micResults[key] = { listening: true };
+  render();
+
+  const recognition = new SpeechRecognitionCtor();
+  recognition.lang = "en-US";
+  recognition.maxAlternatives = 1;
+  recognition.interimResults = false;
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    const norm = normalizeForMatch(transcript);
+    const expectedNorm = normalizeForMatch(expectedText);
+    const isMatch = norm === expectedNorm || norm.includes(expectedNorm) || expectedNorm.includes(norm);
+    state.micResults[key] = { transcript, isMatch, listening: false };
+    render();
+  };
+  recognition.onerror = () => {
+    state.micResults[key] = { error: "Não consegui te ouvir. Tenta de novo.", listening: false };
+    render();
+  };
+  recognition.onend = () => {
+    if (state.micResults[key] && state.micResults[key].listening) {
+      state.micResults[key] = null;
+      render();
+    }
+  };
+
+  try {
+    recognition.start();
+  } catch (e) {
+    state.micResults[key] = { error: "Não foi possível acessar o microfone.", listening: false };
+    render();
+  }
+}
+
 function openLesson(id) {
   state.screen = "lesson";
   state.currentLesson = id;
   state.cardFlips = {};
   state.quizIndex = 0;
   state.quizAnswered = null;
+  state.micResults = {};
   render();
 }
 
@@ -1873,20 +1937,37 @@ function renderLesson() {
   let cardsHtml = "";
   lesson.cards.forEach((c, i) => {
     const flipped = state.cardFlips[i] ? "flipped" : "";
+    const micResult = state.micResults[i];
+    let micFeedbackHtml = "";
+    if (micResult) {
+      if (micResult.listening) {
+        micFeedbackHtml = `<p class="mic-feedback mic-listening">&#127908; Ouvindo...</p>`;
+      } else if (micResult.error) {
+        micFeedbackHtml = `<p class="mic-feedback mic-error">${micResult.error}</p>`;
+      } else if (micResult.isMatch) {
+        micFeedbackHtml = `<p class="mic-feedback mic-ok">&#10003; Ficou parecido! Você disse: "${micResult.transcript}"</p>`;
+      } else {
+        micFeedbackHtml = `<p class="mic-feedback mic-bad">Tenta de novo. Você disse: "${micResult.transcript}"</p>`;
+      }
+    }
     cardsHtml += `
-      <div class="card ${flipped}" onclick="flipCard(${i})">
-        <div class="card-inner">
-          <div class="card-face card-front">
-            <button class="speak-btn" onclick="speak('${c.en.replace(/'/g, "\\'")}', event)" aria-label="Ouvir pronúncia">&#128266;</button>
-            <div class="card-en">${c.en}</div>
-            <div class="card-pron">${c.pron}</div>
-            <div class="card-hint">toque para traduzir</div>
-          </div>
-          <div class="card-face card-back">
-            <div class="card-pt">${c.pt}</div>
-            <div class="card-hint">toque para voltar</div>
+      <div class="card-wrap">
+        <div class="card ${flipped}" onclick="flipCard(${i})">
+          <div class="card-inner">
+            <div class="card-face card-front">
+              <button class="speak-btn" onclick="speak('${c.en.replace(/'/g, "\\'")}', event)" aria-label="Ouvir pronúncia">&#128266;</button>
+              <button class="mic-btn" onclick="startMic(${i}, '${c.en.replace(/'/g, "\\'")}', event)" aria-label="Testar pronúncia">&#127908;</button>
+              <div class="card-en">${c.en}</div>
+              <div class="card-pron">${c.pron}</div>
+              <div class="card-hint">toque para traduzir</div>
+            </div>
+            <div class="card-face card-back">
+              <div class="card-pt">${c.pt}</div>
+              <div class="card-hint">toque para voltar</div>
+            </div>
           </div>
         </div>
+        ${micFeedbackHtml}
       </div>
     `;
   });
