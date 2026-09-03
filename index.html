@@ -122,6 +122,14 @@
     border: 1px solid rgba(43,58,66,0.15); background: #fff; cursor: pointer; font-size: 15px;
   }
   .dialogue-opt:hover { border-color: #C1440E; }
+  .dialogue-opt-wrap { display: flex; flex-direction: column; }
+  .dialogue-opt-row { display: flex; align-items: center; gap: 8px; }
+  .dialogue-opt-row .dialogue-opt { flex: 1; }
+  .mic-btn-dialogue {
+    width: 38px; height: 38px; min-width: 38px; border-radius: 50%;
+    background: rgba(193,68,14,0.12); border: none; font-size: 15px; cursor: pointer;
+  }
+  .mic-btn-dialogue:hover { background: rgba(193,68,14,0.22); }
   .dialogue-feedback { font-size: 14px; padding: 10px 12px; border-radius: 10px; margin: 4px 0; }
   .feedback-best { background: #E6F1EA; color: #244a3d; }
   .feedback-ok { background: #FFF6E0; color: #6b5416; }
@@ -1786,6 +1794,7 @@ function openDialogue(id) {
   state.dialogueTurnIndex = 0;
   state.dialogueHistory = [];
   state.dialogueFeedback = null;
+  state.micResults = {};
   render();
 }
 
@@ -2078,7 +2087,29 @@ function renderDialogue() {
   if (!state.dialogueFeedback) {
     let optsHtml = "";
     turn.options.forEach((opt, i) => {
-      optsHtml += `<button class="dialogue-opt" onclick="chooseDialogueOption(${i})">${opt.text}</button>`;
+      const micKey = "dlg_" + state.currentDialogue + "_" + state.dialogueTurnIndex + "_" + i;
+      const micResult = state.micResults[micKey];
+      let micFeedbackHtml = "";
+      if (micResult) {
+        if (micResult.listening) {
+          micFeedbackHtml = `<p class="mic-feedback mic-listening">&#127908; Ouvindo...</p>`;
+        } else if (micResult.error) {
+          micFeedbackHtml = `<p class="mic-feedback mic-error">${micResult.error}</p>`;
+        } else if (micResult.isMatch) {
+          micFeedbackHtml = `<p class="mic-feedback mic-ok">&#10003; Ficou parecido! Você disse: "${micResult.transcript}"</p>`;
+        } else {
+          micFeedbackHtml = `<p class="mic-feedback mic-bad">Tenta de novo. Você disse: "${micResult.transcript}"</p>`;
+        }
+      }
+      optsHtml += `
+        <div class="dialogue-opt-wrap">
+          <div class="dialogue-opt-row">
+            <button class="dialogue-opt" onclick="chooseDialogueOption(${i})">${opt.text}</button>
+            <button class="mic-btn-dialogue" onclick="startMic('${micKey}', '${opt.text.replace(/'/g, "\\'")}', event)" aria-label="Testar pronúncia">&#127908;</button>
+          </div>
+          ${micFeedbackHtml}
+        </div>
+      `;
     });
     currentTurnHtml = `
       <div class="chat-row npc-row">
