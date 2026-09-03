@@ -76,6 +76,14 @@
   .lesson-title { font-size: 17px; font-weight: 600; margin: 0 0 2px; }
   .lesson-sub { font-size: 14px; color: #7a7a75; margin: 0; }
   .lesson-check { float: right; color: #3D7068; font-weight: 700; font-size: 18px; }
+  .lesson-card.recommended { border-color: #C89B3C; border-width: 2px; }
+  .lesson-badge {
+    position: absolute; top: -9px; right: 10px;
+    background: #C89B3C; color: #2B3A42; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .lesson-card { position: relative; }
+  .pace-note { font-size: 13px; color: #7a7a75; text-align: center; margin: 0 0 16px; }
 
   .lesson-view { background: #fff; border-radius: 14px; padding: 22px; border: 1px solid rgba(43,58,66,0.12); }
   .back-btn {
@@ -585,13 +593,16 @@ function renderHome() {
   const total = LESSONS.length;
   const done = Object.keys(state.completed).filter(k => state.completed[k]).length;
   const pct = Math.round((done / total) * 100);
+  const nextLesson = LESSONS.find(l => !state.completed[l.id]);
 
   let cardsHtml = "";
   LESSONS.forEach((lesson, i) => {
     const isDone = !!state.completed[lesson.id];
+    const isNext = nextLesson && lesson.id === nextLesson.id;
     cardsHtml += `
-      <button class="lesson-card ${isDone ? "done" : ""}" onclick="openLesson('${lesson.id}')">
+      <button class="lesson-card ${isDone ? "done" : ""} ${isNext ? "recommended" : ""}" onclick="openLesson('${lesson.id}')">
         ${isDone ? '<span class="lesson-check">&#10003;</span>' : ""}
+        ${isNext ? '<span class="lesson-badge">Hoje</span>' : ""}
         <div class="lesson-num">${i + 1}</div>
         <p class="lesson-title">${lesson.title}</p>
         <p class="lesson-sub">${lesson.sub}</p>
@@ -612,6 +623,7 @@ function renderHome() {
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
       <p class="progress-label">${done} de ${total} lições concluídas (${pct}%)</p>
     </div>
+    <p class="pace-note">${nextLesson ? `Sugestão: ~15 min hoje (1 lição). Com mais tempo, sinta-se à vontade pra fazer mais.` : "Você concluiu todas as lições disponíveis!"}</p>
     <div class="lesson-grid">${cardsHtml}</div>
     <p class="sync-note">Seu progresso sincroniza entre qualquer aparelho, desde que você entre com o mesmo e-mail.</p>
   `;
