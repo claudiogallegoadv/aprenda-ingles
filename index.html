@@ -576,6 +576,7 @@ function nextQuiz() {
   } else {
     state.completed[state.currentLesson] = true;
     saveProgress(state.currentLesson);
+    state.screen = "home";
     render();
   }
 }
