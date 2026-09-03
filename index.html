@@ -99,6 +99,33 @@
   .unit-count { font-size: 13px; color: #5c6b71; font-weight: 600; }
   .unit-lessons { padding: 0 14px 14px; margin-bottom: 0; }
 
+  .dialogues-section { margin: 24px 0 20px; }
+  .dialogues-title { font-size: 18px; margin: 0 0 2px; }
+  .dialogues-sub { font-size: 13px; color: #7a7a75; margin: 0 0 14px; }
+  .dialogue-card .lesson-num { background: #C1440E; }
+
+  .chat-box { display: flex; flex-direction: column; gap: 10px; }
+  .chat-row { display: flex; }
+  .npc-row { justify-content: flex-start; }
+  .user-row { justify-content: flex-end; }
+  .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 15px; line-height: 1.4; position: relative; }
+  .npc-bubble { background: #F4EFE4; border: 1px solid rgba(43,58,66,0.12); border-bottom-left-radius: 3px; padding-left: 40px; }
+  .user-bubble { background: #C1440E; color: #fff; border-bottom-right-radius: 3px; }
+  .speak-btn-inline {
+    position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+    width: 26px; height: 26px; border-radius: 50%; border: none;
+    background: rgba(43,58,66,0.08); font-size: 12px; cursor: pointer;
+  }
+  .dialogue-options { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .dialogue-opt {
+    text-align: left; padding: 10px 14px; border-radius: 10px;
+    border: 1px solid rgba(43,58,66,0.15); background: #fff; cursor: pointer; font-size: 15px;
+  }
+  .dialogue-opt:hover { border-color: #C1440E; }
+  .dialogue-feedback { font-size: 14px; padding: 10px 12px; border-radius: 10px; margin: 4px 0; }
+  .feedback-best { background: #E6F1EA; color: #244a3d; }
+  .feedback-ok { background: #FFF6E0; color: #6b5416; }
+
   .lesson-view { background: #fff; border-radius: 14px; padding: 22px; border: 1px solid rgba(43,58,66,0.12); }
   .back-btn {
     background: none; border: none; color: #C1440E; font-size: 16px; font-weight: 600;
@@ -1395,6 +1422,146 @@ const UNITS = [
   { name: "Vida social e cultura", ids: ["l22","l29","l32","l33","l34","l45","l46","l58","l59","l60","l64","l65"] },
 ];
 
+const DIALOGUES = [
+  {
+    id: "d1",
+    title: "No aeroporto",
+    sub: "Check-in e imigração",
+    turns: [
+      { npc: "Good morning! Can I see your passport, please?",
+        options: [
+          { text: "Here you go.", best: true, feedback: "Ótimo — resposta curta, natural e educada." },
+          { text: "I no have passport.", best: false, feedback: "Entendem, mas soa estranho. O certo seria \"I don't have it\" se realmente não tivesse." },
+          { text: "Passport? Why?", best: false, feedback: "Meio brusco para o contexto. \"Here you go\" é mais natural." },
+        ] },
+      { npc: "What's the purpose of your trip?",
+        options: [
+          { text: "I'm here on vacation.", best: true, feedback: "Perfeito, resposta clara e comum." },
+          { text: "Vacation.", best: false, feedback: "Entendem, mas uma frase completa soa mais natural." },
+          { text: "I go to see.", best: false, feedback: "Gramática confusa. Tente \"I'm here on vacation\" ou \"I'm visiting family\"." },
+        ] },
+      { npc: "How long are you staying?",
+        options: [
+          { text: "For eight days.", best: true, feedback: "Perfeito — direto e correto." },
+          { text: "Eight day.", best: false, feedback: "Quase lá! O certo é \"eight days\", com o plural." },
+          { text: "I don't know.", best: false, feedback: "Funciona, mas é melhor ter uma resposta pronta em imigração." },
+        ] },
+      { npc: "Enjoy your trip!",
+        options: [
+          { text: "Thank you very much!", best: true, feedback: "Ótima despedida, educada e natural." },
+          { text: "Thanks, bye.", best: false, feedback: "Também funciona, mas um pouco mais informal para o contexto." },
+          { text: "OK.", best: false, feedback: "Curto demais — melhor agradecer." },
+        ] },
+    ],
+  },
+  {
+    id: "d2",
+    title: "No hotel",
+    sub: "Check-in na recepção",
+    turns: [
+      { npc: "Good afternoon! Welcome. Do you have a reservation?",
+        options: [
+          { text: "Yes, under the name Gallego.", best: true, feedback: "Perfeito — direto ao ponto." },
+          { text: "Yes, I have.", best: false, feedback: "Quase lá — melhor completar com o nome da reserva." },
+          { text: "Reservation? Yes.", best: false, feedback: "Meio confuso. Tente uma frase completa." },
+        ] },
+      { npc: "Great, here's your key. Breakfast is from 7 to 10.",
+        options: [
+          { text: "Thank you! Is breakfast included?", best: true, feedback: "Boa pergunta de acompanhamento, natural." },
+          { text: "OK thanks.", best: false, feedback: "Funciona, mas você perde a chance de confirmar detalhes." },
+          { text: "Breakfast where?", best: false, feedback: "Um pouco brusco — \"Where is breakfast served?\" seria melhor." },
+        ] },
+      { npc: "Yes, it's included. The restaurant is on the second floor.",
+        options: [
+          { text: "Perfect, thank you so much.", best: true, feedback: "Ótimo fechamento, educado e natural." },
+          { text: "OK.", best: false, feedback: "Curto demais para encerrar a conversa educadamente." },
+          { text: "Good.", best: false, feedback: "Funciona, mas \"thank you\" fecha melhor a interação." },
+        ] },
+    ],
+  },
+  {
+    id: "d3",
+    title: "No restaurante",
+    sub: "Pedindo comida",
+    turns: [
+      { npc: "Hi, welcome! Table for how many?",
+        options: [
+          { text: "Table for two, please.", best: true, feedback: "Perfeito, é exatamente assim que se pede." },
+          { text: "Two.", best: false, feedback: "Entendem, mas \"table for two\" é mais completo e natural." },
+          { text: "We are two people here.", best: false, feedback: "Funciona, mas é mais longo que o necessário." },
+        ] },
+      { npc: "Here's the menu. Can I get you something to drink?",
+        options: [
+          { text: "I'd like a water, please.", best: true, feedback: "Ótimo — \"I'd like\" é a forma educada de pedir." },
+          { text: "Give me water.", best: false, feedback: "Funciona, mas soa mandão. \"I'd like\" é mais educado." },
+          { text: "Water.", best: false, feedback: "Entendem, mas uma frase completa é mais educada." },
+        ] },
+      { npc: "Sure. Are you ready to order?",
+        options: [
+          { text: "Yes, I'll have the chicken, please.", best: true, feedback: "Perfeito — \"I'll have...\" é a forma padrão de pedir." },
+          { text: "I want chicken.", best: false, feedback: "Entendem, mas \"I'll have\" soa mais educado em restaurante." },
+          { text: "Chicken for me.", best: false, feedback: "Funciona informalmente, mas \"I'll have\" é mais recomendado." },
+        ] },
+      { npc: "Great choice! Anything else?",
+        options: [
+          { text: "No, that's all, thank you.", best: true, feedback: "Perfeito fechamento de pedido." },
+          { text: "No.", best: false, feedback: "Funciona, mas soa seco. Complete com \"that's all, thank you\"." },
+          { text: "That's it.", best: false, feedback: "Também funciona, mas adicionar \"thank you\" é mais educado." },
+        ] },
+    ],
+  },
+  {
+    id: "d4",
+    title: "Pedindo informação na rua",
+    sub: "Perguntando direções",
+    turns: [
+      { npc: "Excuse me, can I help you?",
+        options: [
+          { text: "Yes, how do I get to the train station?", best: true, feedback: "Ótima pergunta, clara e educada." },
+          { text: "Train station where?", best: false, feedback: "Entendem, mas soa brusco. \"How do I get to...\" é mais natural." },
+          { text: "I need station.", best: false, feedback: "Gramática confusa — melhor usar a frase completa." },
+        ] },
+      { npc: "Go straight and turn left at the second street.",
+        options: [
+          { text: "Straight, then left at the second street. Got it, thanks!", best: true, feedback: "Ótimo — repetir a instrução confirma que você entendeu." },
+          { text: "OK.", best: false, feedback: "Funciona, mas repetir a instrução evita mal-entendidos." },
+          { text: "Left where?", best: false, feedback: "Já foi explicado — melhor confirmar em vez de perguntar de novo." },
+        ] },
+      { npc: "You're welcome! Have a good day.",
+        options: [
+          { text: "Thank you, you too!", best: true, feedback: "Perfeito, despedida natural e educada." },
+          { text: "Bye.", best: false, feedback: "Funciona, mas \"thank you, you too\" é mais completo." },
+          { text: "OK bye.", best: false, feedback: "Também funciona, mas menos caloroso." },
+        ] },
+    ],
+  },
+  {
+    id: "d5",
+    title: "Emergência simples",
+    sub: "Pedindo ajuda",
+    turns: [
+      { npc: "Hello, this is the front desk. How can I help you?",
+        options: [
+          { text: "I need a doctor, please.", best: true, feedback: "Direto e claro — exatamente o que se precisa numa emergência." },
+          { text: "I sick.", best: false, feedback: "Entendem, mas o certo é \"I'm sick\" ou melhor ainda \"I need a doctor\"." },
+          { text: "Help.", best: false, feedback: "Funciona, mas dar mais contexto ajuda a receptação a agir rápido." },
+        ] },
+      { npc: "Of course. What's wrong?",
+        options: [
+          { text: "I have a fever and a headache.", best: true, feedback: "Perfeito — específico e fácil de entender." },
+          { text: "I feel bad.", best: false, feedback: "Funciona, mas ser mais específico ajuda o atendimento." },
+          { text: "Sick.", best: false, feedback: "Muito vago — tente descrever o sintoma." },
+        ] },
+      { npc: "I'll call a doctor right away. Please wait in your room.",
+        options: [
+          { text: "Thank you so much, I really appreciate it.", best: true, feedback: "Ótimo, mostra gratidão de forma natural." },
+          { text: "OK thanks.", best: false, feedback: "Funciona bem, resposta mais simples." },
+          { text: "Fast please.", best: false, feedback: "Entendem a urgência, mas soa rude. Melhor agradecer primeiro." },
+        ] },
+    ],
+  },
+];
+
 let state = {
   screen: "loading",
   currentLesson: null,
@@ -1407,6 +1574,10 @@ let state = {
   authError: "",
   expandedUnits: {},
   expandedUnitsInit: false,
+  currentDialogue: null,
+  dialogueTurnIndex: 0,
+  dialogueHistory: [],
+  dialogueFeedback: null,
 };
 
 async function init() {
@@ -1545,6 +1716,38 @@ function goHome() {
   render();
 }
 
+function openDialogue(id) {
+  state.screen = "dialogue";
+  state.currentDialogue = id;
+  state.dialogueTurnIndex = 0;
+  state.dialogueHistory = [];
+  state.dialogueFeedback = null;
+  render();
+}
+
+function chooseDialogueOption(optIndex) {
+  const dialogue = DIALOGUES.find(d => d.id === state.currentDialogue);
+  const turn = dialogue.turns[state.dialogueTurnIndex];
+  const option = turn.options[optIndex];
+  state.dialogueHistory.push({ npc: turn.npc, chosen: option.text });
+  state.dialogueFeedback = { best: option.best, text: option.feedback };
+  render();
+}
+
+function nextDialogueTurn() {
+  const dialogue = DIALOGUES.find(d => d.id === state.currentDialogue);
+  state.dialogueFeedback = null;
+  if (state.dialogueTurnIndex < dialogue.turns.length - 1) {
+    state.dialogueTurnIndex++;
+    render();
+  } else {
+    state.completed["dlg_" + dialogue.id] = true;
+    saveProgress("dlg_" + dialogue.id);
+    state.screen = "home";
+    render();
+  }
+}
+
 function flipCard(i) {
   state.cardFlips[i] = !state.cardFlips[i];
   render();
@@ -1628,6 +1831,19 @@ function renderHome() {
     `;
   });
 
+  let dialoguesHtml = "";
+  DIALOGUES.forEach(d => {
+    const isDone = !!state.completed["dlg_" + d.id];
+    dialoguesHtml += `
+      <button class="lesson-card dialogue-card ${isDone ? "done" : ""}" onclick="openDialogue('${d.id}')">
+        ${isDone ? '<span class="lesson-check">&#10003;</span>' : ""}
+        <div class="lesson-num">&#128172;</div>
+        <p class="lesson-title">${d.title}</p>
+        <p class="lesson-sub">${d.sub}</p>
+      </button>
+    `;
+  });
+
   document.getElementById("app").innerHTML = `
     <div class="cover">
       <h1>Aprenda Inglês</h1>
@@ -1643,6 +1859,11 @@ function renderHome() {
     </div>
     <p class="pace-note">${nextLesson ? `Sugestão: ~15 min hoje (1 lição). Com mais tempo, sinta-se à vontade pra fazer mais.` : "Você concluiu todas as lições disponíveis!"}</p>
     <div class="units-wrap">${unitsHtml}</div>
+    <div class="dialogues-section">
+      <h3 class="dialogues-title">Prática de conversação</h3>
+      <p class="dialogues-sub">Diálogos guiados — escolha o que responder e receba feedback na hora.</p>
+      <div class="lesson-grid">${dialoguesHtml}</div>
+    </div>
     <p class="sync-note">Seu progresso sincroniza entre qualquer aparelho, desde que você entre com o mesmo e-mail.</p>
   `;
 }
@@ -1753,10 +1974,77 @@ function renderAuth() {
   document.getElementById("auth-form").addEventListener("submit", handleAuthSubmit);
 }
 
+function renderDialogue() {
+  const dialogue = DIALOGUES.find(d => d.id === state.currentDialogue);
+  const turn = dialogue.turns[state.dialogueTurnIndex];
+
+  let historyHtml = "";
+  state.dialogueHistory.forEach(h => {
+    historyHtml += `
+      <div class="chat-row npc-row">
+        <div class="chat-bubble npc-bubble">
+          <button class="speak-btn-inline" onclick="speak('${h.npc.replace(/'/g, "\\'")}', event)">&#128266;</button>
+          ${h.npc}
+        </div>
+      </div>
+      <div class="chat-row user-row">
+        <div class="chat-bubble user-bubble">${h.chosen}</div>
+      </div>
+    `;
+  });
+
+  let currentTurnHtml = "";
+  if (!state.dialogueFeedback) {
+    let optsHtml = "";
+    turn.options.forEach((opt, i) => {
+      optsHtml += `<button class="dialogue-opt" onclick="chooseDialogueOption(${i})">${opt.text}</button>`;
+    });
+    currentTurnHtml = `
+      <div class="chat-row npc-row">
+        <div class="chat-bubble npc-bubble">
+          <button class="speak-btn-inline" onclick="speak('${turn.npc.replace(/'/g, "\\'")}', event)">&#128266;</button>
+          ${turn.npc}
+        </div>
+      </div>
+      <div class="dialogue-options">${optsHtml}</div>
+    `;
+  } else {
+    const isLast = state.dialogueTurnIndex === dialogue.turns.length - 1;
+    currentTurnHtml = `
+      <div class="chat-row npc-row">
+        <div class="chat-bubble npc-bubble">
+          <button class="speak-btn-inline" onclick="speak('${turn.npc.replace(/'/g, "\\'")}', event)">&#128266;</button>
+          ${turn.npc}
+        </div>
+      </div>
+      <div class="chat-row user-row">
+        <div class="chat-bubble user-bubble">${state.dialogueHistory[state.dialogueHistory.length - 1].chosen}</div>
+      </div>
+      <div class="dialogue-feedback ${state.dialogueFeedback.best ? "feedback-best" : "feedback-ok"}">
+        ${state.dialogueFeedback.best ? "&#10003; " : "&#128161; "}${state.dialogueFeedback.text}
+      </div>
+      <button class="${isLast ? "complete-btn" : "next-btn"}" onclick="nextDialogueTurn()">${isLast ? "Concluir diálogo" : "Continuar"}</button>
+    `;
+  }
+
+  document.getElementById("app").innerHTML = `
+    <button class="back-btn" onclick="goHome()">&larr; Voltar às lições</button>
+    <div class="lesson-view">
+      <h2>${dialogue.title}</h2>
+      <p class="lesson-sub">${dialogue.sub}</p>
+      <div class="chat-box">
+        ${historyHtml}
+        ${currentTurnHtml}
+      </div>
+    </div>
+  `;
+}
+
 function render() {
   if (state.screen === "loading") renderLoading();
   else if (state.screen === "auth") renderAuth();
   else if (state.screen === "home") renderHome();
+  else if (state.screen === "dialogue") renderDialogue();
   else renderLesson();
 }
 
